@@ -3,6 +3,7 @@ from fastapi import APIRouter, Request, Depends
 from pydantic import BaseModel
 from datetime import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.db import get_db
 from app.models.agent import Agent
@@ -11,29 +12,39 @@ from app.models.agent import Agent
 
 router = APIRouter()
 
-class AgentRegistration(BaseModel):
+class AgentHeartbeat(BaseModel):
+    id: str
     hostname: str
     os_name: str
     os_version: str
 
 
-@router.post("/register")
-async def register_agent(agent: AgentRegistration, req: Request, db: Session = Depends(get_db)):
-    agent_id = uuid.uuid4()
-    
-    agent = Agent(
-        id=agent_id,
-        hostname=agent.hostname,
-        os_name=agent.os_name,
-        os_version=agent.os_version,
-        ip_address=req.client.host,
-        status="active",
-        registered_at=datetime.now(),
-        last_seen=datetime.now()
-    )
+@router.post("/heartbeat")
+async def agent_heartbeat(payload: AgentHeartbeat, req: Request, db: Session = Depends(get_db)):
+    stmt = select(Agent).where(Agent.id == payload.id)
+    agent = db.execute(stmt).scalar_one_or_none()
 
-    db.add(agent)
-    db.commit()
-    db.refresh(agent)
+    if agent:
+        agent.last_seen = datetime.now()
+        agent.hostname = payload.hostname
+        agent.os_name = payload.os_name
+        agent.os_version = payload.os_version
+        db.commit()
+        return {"status": "ok"}
+    else:
+        new_agent = Agent(
+            id=payload.id,
+            hostname=payload.hostname,
+            os_name=payload.os_name,
+            os_version=payload.os_version,
+            ip_address=req.client.host,
+            status="online",
+            registered_at=datetime.now(),
+            last_seen=datetime.now()
+        )
 
-    return {"agent_id": str(agent.id)}
+        db.add(new_agent)
+        db.commit()
+        db.refresh(new_agent)
+
+        return {"status": "ok"}
