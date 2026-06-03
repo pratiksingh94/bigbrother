@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"lilbro/internals/config"
+	"lilbro/internal/agent"
+	"lilbro/internal/config"
 )
 
 func main() {
-	fmt.Println("Big Brother is watching, lilbro gonna help him watch.")
+	fmt.Println("Big Brother is watching, lil bro gonna help him watch.")
 	config.EnsureConfig()
 
 	cfg, err := config.GetConfig()
@@ -15,6 +16,7 @@ func main() {
 		return
 	}
 
-	fmt.Println(cfg.ID)
-	fmt.Println(cfg.ServerURL)
+	agent.RunHeartbeatLoop(cfg)
+
+	select {}
 }
