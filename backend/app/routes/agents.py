@@ -12,13 +12,28 @@ from app.models.agent import Agent
 
 router = APIRouter()
 
+
+
+
+@router.get("")
+async def get_agents(db: Session = Depends(get_db)):
+    stmt = select(Agent)
+    agents = db.scalars(stmt).all()
+    return {"agents": agents}
+
+
+
+
+
+
+
+
 class AgentHeartbeat(BaseModel):
     id: str
     hostname: str
     os_name: str
     # os_version: str
     kernel_version: str
-
 
 @router.post("/heartbeat")
 async def agent_heartbeat(payload: AgentHeartbeat, req: Request, db: Session = Depends(get_db)):
