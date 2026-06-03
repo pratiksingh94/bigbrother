@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* globals.css */
+@import "tailwindcss";
+
+@theme {
+  --color-background: oklch(14% 0.02 250);
+  --color-foreground: oklch(92% 0.01 220);
+
+  --color-card: oklch(16% 0.02 250);
+  --color-card-foreground: oklch(92% 0.01 220);
+
+  --color-muted: oklch(20% 0.02 250);
+  --color-muted-foreground: oklch(55% 0.02 230);
+
+  --color-border: oklch(22% 0.02 250);
+
+  /* status colors */
+  --color-primary: oklch(72% 0.18 162);      /* terminal green — online */
+  --color-primary-foreground: oklch(10% 0 0);
+
+  --color-destructive: oklch(60% 0.22 25);   /* red — offline / critical */
+  --color-warning: oklch(75% 0.18 75);       /* amber — degraded / stale */
+  --color-info: oklch(68% 0.18 240);         /* blue — telemetry / neutral */
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
