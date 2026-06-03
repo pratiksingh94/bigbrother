@@ -16,7 +16,8 @@ class AgentHeartbeat(BaseModel):
     id: str
     hostname: str
     os_name: str
-    os_version: str
+    # os_version: str
+    kernel_version: str
 
 
 @router.post("/heartbeat")
@@ -28,7 +29,7 @@ async def agent_heartbeat(payload: AgentHeartbeat, req: Request, db: Session = D
         agent.last_seen = datetime.now()
         agent.hostname = payload.hostname
         agent.os_name = payload.os_name
-        agent.os_version = payload.os_version
+        agent.kernel_version = payload.kernel_version
         db.commit()
         return {"status": "ok"}
     else:
@@ -36,7 +37,7 @@ async def agent_heartbeat(payload: AgentHeartbeat, req: Request, db: Session = D
             id=payload.id,
             hostname=payload.hostname,
             os_name=payload.os_name,
-            os_version=payload.os_version,
+            kernel_version=payload.kernel_version,
             ip_address=req.client.host,
             status="online",
             registered_at=datetime.now(),
