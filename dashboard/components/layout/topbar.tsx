@@ -55,7 +55,7 @@ export default function Topbar() {
                             : "border-destructive/30 text-destructive",
                     )}>
                         <span className={cn("h-1.5 w-1.5 rounded-full", backendOnline === null ? "bg-muted-foreground" : backendOnline ? "bg-success" : "bg-destructive")}/>
-                        Backend
+                        Server
                 </div>
             </div>
         </header>

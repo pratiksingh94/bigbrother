@@ -4,6 +4,7 @@ import "./globals.css";
 import Shell from "@/components/layout/shell";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,9 @@ export default function RootLayout({
       <body className="h-full">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TooltipProvider>
+            <QueryProvider>
             <Shell>{children}</Shell>
+            </QueryProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>
