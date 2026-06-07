@@ -3,6 +3,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --success: oklch(0.55 0.15 145);
   --background: oklch(0.9665 0.0045 258.3247);
   --foreground: oklch(0.2178 0 0);
   --card: oklch(1.0000 0 0);
@@ -58,6 +59,7 @@
 }
 
 .dark {
+  --success: oklch(0.65 0.18 145);
   --background: oklch(0.1457 0.0043 285.8570);
   --foreground: oklch(0.9587 0.0027 286.3496);
   --card: oklch(0.1845 0.0101 285.3646);
@@ -111,6 +113,7 @@
 }
 
 @theme inline {
+  --color-success: var(--success);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

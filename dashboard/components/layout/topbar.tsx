@@ -22,9 +22,9 @@ export default function Topbar() {
     useEffect(() => {
         async function ping() {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`, { signal: AbortSignal.timeout(3) })
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/`, { signal: AbortSignal.timeout(3000) })
                 setBackendOnline(res.ok)
-                // console.log(res.ok)
+                console.log(res.ok)
             } catch {
                 setBackendOnline(false)
             }
@@ -47,14 +47,14 @@ export default function Topbar() {
             <div className="ml-auto flex items-center gap-2">
                 <div
                     className={cn(
-                        "flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs",
+                        "flex items-center gap-1.5 rounded-full border-success px-2.5 py-0.5 text-xs",
                         backendOnline === null
                         ? "border-border text-muted-foreground"
                         : backendOnline
-                            ? "border-primary/30 text-primary"
+                            ? "border-primary/30 text-success"
                             : "border-destructive/30 text-destructive",
                     )}>
-                        <span className={cn("h-1.5 w-1.5 rounded-full", backendOnline === null ? "bg-muted-foreground" : backendOnline ? "bg-primary" : "bg-destructive")}/>
+                        <span className={cn("h-1.5 w-1.5 rounded-full", backendOnline === null ? "bg-muted-foreground" : backendOnline ? "bg-success" : "bg-destructive")}/>
                         Backend
                 </div>
             </div>
