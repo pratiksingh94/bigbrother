@@ -8,3 +8,11 @@ export async function getAgents(): Promise<AgentsResponse> {
 
     return res.json()
 }
+
+export async function getAgent(id: string): Promise<Agent> {
+    const res = await fetch(`${API_URL}/agents/${id}`)
+    if(!res.ok) throw new Error("failed to fetch agent details");
+
+    // console.log(await res.json())
+    return res.json()
+}

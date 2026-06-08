@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatLastSeen, statusBadge } from "@/lib/agent-utils";
 import { getAgents } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 import { AgentsResponse } from "@/lib/types";
@@ -11,29 +12,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Monitor } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-
-
-// i will put these in some file later
-const statusBadge = (status: string) => {
-    switch(status) {
-        case "online":
-            return <Badge variant="default">online</Badge>
-        case "offline":
-            return <Badge variant="destructive">offline</Badge>
-        default:
-            return <Badge variant="secondary">{status}</Badge>
-    }
-}
-
-const formatLastSeen = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    })
-}
 
 
 export default function AgentsPage() {

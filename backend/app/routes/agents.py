@@ -8,30 +8,19 @@ from sqlalchemy import select
 from app.db import get_db
 from app.models.agent import Agent
 from app.utils.agents import get_presence
-
+from app.schemas.agents import AgentHeartbeat, AgentsResponse, Agent as AgentResp
 
 router = APIRouter()
 
 
-
-class AgentsResponse(BaseModel):
-    id: UUID
-    hostname: str
-    os_name: str
-    kernel_version: str
-    ip_address: str
-    registered_at: datetime
-    last_seen: datetime
-    status: str
-
-@router.get("")
+@router.get("", response_model=AgentsResponse)
 async def get_agents(db: Session = Depends(get_db)):
     stmt = select(Agent)
     agents = db.scalars(stmt).all()
     
     return {
         "agents": [
-            AgentsResponse(
+            AgentResp(
                 id=agent.id,
                 hostname=agent.hostname,
                 os_name=agent.os_name,
@@ -45,18 +34,6 @@ async def get_agents(db: Session = Depends(get_db)):
     }
 
 
-
-
-
-
-
-
-class AgentHeartbeat(BaseModel):
-    id: str
-    hostname: str
-    os_name: str
-    # os_version: str
-    kernel_version: str
 
 @router.post("/heartbeat")
 async def agent_heartbeat(payload: AgentHeartbeat, req: Request, db: Session = Depends(get_db)):
@@ -87,3 +64,11 @@ async def agent_heartbeat(payload: AgentHeartbeat, req: Request, db: Session = D
         db.refresh(new_agent)
 
         return {"status": "ok"}
+
+
+@router.get("/{id}", response_model=AgentResp)
+async def agent_info(id: str, db: Session = Depends(get_db)):
+    stmt = select(Agent).where(Agent.id == id)
+    agent = db.execute(stmt).scalar_one_or_none()
+
+    return agent
