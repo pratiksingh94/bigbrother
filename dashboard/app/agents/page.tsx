@@ -41,7 +41,7 @@ export default function AgentsPage() {
     const {data} = useQuery({
         queryKey: queryKeys.agents,
         queryFn: getAgents,
-        refetchInterval: 100000
+        refetchInterval: 10000
     })
     
     // const [agents, setAgents] = useState<AgentsResponse>(agents);
