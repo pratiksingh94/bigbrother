@@ -1,4 +1,4 @@
-import uuid
+from uuid import UUID
 from fastapi import APIRouter, Request, Depends
 from pydantic import BaseModel
 from datetime import datetime
@@ -7,19 +7,42 @@ from sqlalchemy import select
 
 from app.db import get_db
 from app.models.agent import Agent
-
+from app.utils.agents import get_presence
 
 
 router = APIRouter()
 
 
 
+class AgentsResponse(BaseModel):
+    id: UUID
+    hostname: str
+    os_name: str
+    kernel_version: str
+    ip_address: str
+    registered_at: datetime
+    last_seen: datetime
+    status: str
 
 @router.get("")
 async def get_agents(db: Session = Depends(get_db)):
     stmt = select(Agent)
     agents = db.scalars(stmt).all()
-    return {"agents": agents}
+    
+    return {
+        "agents": [
+            AgentsResponse(
+                id=agent.id,
+                hostname=agent.hostname,
+                os_name=agent.os_name,
+                kernel_version=agent.kernel_version,
+                ip_address=agent.ip_address,
+                registered_at=agent.registered_at,
+                last_seen=agent.last_seen,
+                status=get_presence(agent.last_seen)
+            ) for agent in agents
+        ]
+    }
 
 
 
