@@ -12,3 +12,24 @@ export interface Agent {
 export interface AgentsResponse {
     agents: Agent[]
 }
+
+
+export interface Event {
+    id: number;
+    host: {
+        id: string;
+        hostname: string;
+    };
+    log: {
+        source: string;
+        raw: string;
+        ingested_at: string;
+    };
+    event_type: string;
+    context: Record<string, unknown>;
+    created_at: string;
+}
+
+export interface EventsResponse {
+    events: Event[]
+}

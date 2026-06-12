@@ -1,13 +1,14 @@
 "use client"
 
-import { Eye, LayoutDashboard, Monitor } from "lucide-react";
+import { Activity, Eye, LayoutDashboard, Monitor } from "lucide-react";
 import {Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { NavMain } from "./nav-main";
 
 const navMain = [
   { title: "Dashboard", url: "/", icon: <LayoutDashboard/> },
-  { title: "Agents", url: "/agents", icon: <Monitor/> }
+  { title: "Agents", url: "/agents", icon: <Monitor/> },
+  { title: "Events", url: "/events", icon: <Activity/> }
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

@@ -1,14 +1,17 @@
 from uuid import UUID
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select
 
 from app.db import get_db
 from app.models.agent import Agent
+from app.models.event import Event
+from app.models.log import Log
 from app.utils.agents import get_presence
 from app.schemas.agents import AgentHeartbeat, AgentsResponse, Agent as AgentResp
+from app.schemas.events import EventsResponse, EventsRequest, EventResponse, LogSchema
 
 router = APIRouter()
 
@@ -72,3 +75,52 @@ async def agent_info(id: str, db: Session = Depends(get_db)):
     agent = db.execute(stmt).scalar_one_or_none()
 
     return agent
+
+
+@router.post("/{id}/events")
+async def createEvent(id: str, req_payload: EventsRequest, db: Session = Depends(get_db)):
+    stmt = select(Agent).where(Agent.id == id)
+    agent = db.execute(stmt).scalar_one_or_none()
+
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    new_log = Log(
+        agent_id=id,
+        source=req_payload.log.source,
+        raw=req_payload.log.raw,
+        ingested_at=req_payload.log.ingested_at
+    )
+
+    db.add(new_log)
+    db.commit()
+    db.refresh(new_log)
+
+    new_event = Event(
+        agent_id=id,
+        log_id=new_log.id,
+        event_type=req_payload.event_type,
+        payload=req_payload.payload
+    )
+
+    db.add(new_event)
+    db.commit()
+    db.refresh(new_event)
+
+    return {"status": "ok"}
+
+@router.get("/{id}/events", response_model=EventsResponse)
+async def getEvents(id: str, db: Session = Depends(get_db)):
+    stmt = select(Agent).where(Agent.id == id)
+    agent = db.execute(stmt).scalar_one_or_none()
+
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    events_stmt = select(Event).where(Event.agent_id == id).options(joinedload(Event.agent)).order_by(Event.created_at.desc()).limit(100)
+    events = db.scalars(events_stmt).all()
+    return {
+        "events": [
+            EventResponse.model_validate(event) for event in events
+        ]
+    }
