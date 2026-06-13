@@ -85,20 +85,22 @@ async def createEvent(id: str, req_payload: EventsRequest, db: Session = Depends
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
 
-    new_log = Log(
-        agent_id=id,
-        source=req_payload.log.source,
-        raw=req_payload.log.raw,
-        ingested_at=req_payload.log.ingested_at
-    )
+    log_id = None
+    if req_payload.log:
+        new_log = Log(
+            agent_id=id,
+            source=req_payload.log.source,
+            raw=req_payload.log.raw,
+            ingested_at=req_payload.log.ingested_at
+        )
 
-    db.add(new_log)
-    db.commit()
-    db.refresh(new_log)
+        db.add(new_log)
+        db.flush()
+        log_id = new_log.id
 
     new_event = Event(
         agent_id=id,
-        log_id=new_log.id,
+        log_id=log_id,
         event_type=req_payload.event_type,
         payload=req_payload.payload
     )

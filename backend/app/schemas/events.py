@@ -21,7 +21,7 @@ class LogSchema(BaseModel):
 class EventResponse(BaseModel):
     id: int
     host: HostSummary = Field(validation_alias="agent")
-    log: LogSchema
+    log: LogSchema | None = None
     event_type: str
     context: Dict[str, Any] = Field(validation_alias="payload")
     created_at: datetime
@@ -32,6 +32,6 @@ class EventsResponse(BaseModel):
     events: list[EventResponse]
 
 class EventsRequest(BaseModel):
-    log: LogSchema
+    log: LogSchema | None = None
     event_type: str
     payload: Dict[str, Any]

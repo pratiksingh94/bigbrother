@@ -12,6 +12,7 @@ export default function EventTable({ events, handleBadgeClick }: { events: Event
                 <TableHead>Time</TableHead>
                 <TableHead>Host</TableHead>
                 <TableHead>Event Type</TableHead>
+                <TableHead>Context</TableHead>
                 <TableHead>Raw</TableHead>
             </TableRow>
         </TableHeader>
@@ -29,8 +30,17 @@ export default function EventTable({ events, handleBadgeClick }: { events: Event
                             <Badge variant="secondary">{event.event_type}</Badge>
                         </button>
                     </TableCell>
+                    <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                            {Object.entries(event.context).map(([k, v]) => (
+                                <span key={k} className="font-mono text-xs text-muted-foreground">
+                                    <span className="text-foreground">{k}</span>={String(v)}
+                                </span>
+                            ))}
+                        </div>
+                    </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground max-w-md">
-                        {truncate(event.log.raw)}
+                        {event.log ? truncate(event.log.raw) : "no logs"}
                     </TableCell>
                 </TableRow>
             ))}

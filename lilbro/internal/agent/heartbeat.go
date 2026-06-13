@@ -10,32 +10,34 @@ import (
 
 func RunHeartbeatLoop(cfg config.Config) {
 
-	sysinfo := system.GetSysInfo()
-	payload := api.HeartbeatPayload{
-		ID:            cfg.ID,
-		Hostname:      sysinfo.Hostname,
-		KernelVersion: sysinfo.KernelVersion,
-		OSName:        sysinfo.OSName,
-	}
+	go func() {
+		sysinfo := system.GetSysInfo()
+		payload := api.HeartbeatPayload{
+			ID:            cfg.ID,
+			Hostname:      sysinfo.Hostname,
+			KernelVersion: sysinfo.KernelVersion,
+			OSName:        sysinfo.OSName,
+		}
 
-	ticker := time.NewTicker(1 * time.Minute)
-	defer ticker.Stop()
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
 
-	// sending once then timer starts
-	err := api.SendHeartbeat(cfg.ServerURL, payload)
-	if err != nil {
-		fmt.Println("error in heartbeat:", err)
-	} else {
-		fmt.Println("heartbeat sent")
-	}
-
-	for range ticker.C {
+		// sending once then timer starts
 		err := api.SendHeartbeat(cfg.ServerURL, payload)
-
 		if err != nil {
 			fmt.Println("error in heartbeat:", err)
 		} else {
 			fmt.Println("heartbeat sent")
 		}
-	}
+
+		for range ticker.C {
+			err := api.SendHeartbeat(cfg.ServerURL, payload)
+
+			if err != nil {
+				fmt.Println("error in heartbeat:", err)
+			} else {
+				fmt.Println("heartbeat sent")
+			}
+		}
+	}()
 }

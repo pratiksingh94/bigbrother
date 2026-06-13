@@ -30,7 +30,7 @@ export default function EventsPage() {
     const { data, isLoading, error } = useQuery({
         queryKey: queryKeys.events,
         queryFn: getEvents,
-        refetchInterval: 30000
+        refetchInterval: 10000
     })
 
     const { data: hosts } = useQuery({
