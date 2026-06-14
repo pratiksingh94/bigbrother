@@ -9,8 +9,8 @@ import (
 )
 
 type EventPayload struct {
-	Type    string         `json:"event_type"`
-	Payload map[string]any `json:"payload"`
+	Type    string `json:"event_type"`
+	Payload any    `json:"payload"`
 }
 
 func SendEvent(cfg config.Config, payload EventPayload) error {

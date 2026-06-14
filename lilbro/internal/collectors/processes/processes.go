@@ -11,23 +11,42 @@ import (
 	"github.com/shirou/gopsutil/v4/process"
 )
 
-// type ProcessInfo struct {
-// 	PID int
-// 	Name string
-// }
+type ProcessInfo struct {
+	PID        int
+	PPID       int
+	Name       string
+	CmdLine    string
+	User       string
+	Cwd        string
+	CreateTime string
+}
 
 func Run(cfg config.Config) {
-	prevProcesses := make(map[int]string)
+	prevProcesses := make(map[int]ProcessInfo)
 	initProcesses, err := process.Processes()
 
 	if err == nil {
 		for _, p := range initProcesses {
-			name, err := p.Name()
-			if err != nil {
+			name, _ := p.Name()
+			ppid, _ := p.Ppid()
+			cmdline, _ := p.Cmdline()
+			user, _ := p.Username()
+			cwd, _ := p.Cwd()
+			createTime, _ := p.CreateTime()
+
+			if name == "" || ppid == -1 {
 				continue
 			}
 
-			prevProcesses[int(p.Pid)] = name
+			prevProcesses[int(p.Pid)] = ProcessInfo{
+				PID:        int(p.Pid),
+				PPID:       int(ppid),
+				Name:       name,
+				CmdLine:    cmdline,
+				User:       user,
+				Cwd:        cwd,
+				CreateTime: time.UnixMilli(createTime).Format(time.RFC3339),
+			}
 		}
 	}
 
@@ -38,7 +57,7 @@ func Run(cfg config.Config) {
 
 		for range ticker.C {
 			// fmt.Println("tick")
-			currProceses := make(map[int]string)
+			currProceses := make(map[int]ProcessInfo)
 			processes, err := process.Processes()
 			if err != nil {
 				fmt.Println("failed to get processes")
@@ -46,38 +65,50 @@ func Run(cfg config.Config) {
 
 			for _, p := range processes {
 				name, _ := p.Name()
-				currProceses[int(p.Pid)] = name
+				ppid, _ := p.Ppid()
+				cmdline, _ := p.Cmdline()
+				user, _ := p.Username()
+				cwd, _ := p.Cwd()
+				createTime, _ := p.CreateTime()
+
+				if name == "" || ppid == -1 {
+					continue
+				}
+
+				currProceses[int(p.Pid)] = ProcessInfo{
+					Name:       name,
+					PID:        int(p.Pid),
+					PPID:       int(ppid),
+					CmdLine:    cmdline,
+					User:       user,
+					Cwd:        cwd,
+					CreateTime: time.UnixMilli(createTime).Format(time.RFC3339),
+				}
 			}
 
 			added, removed := FindDifference(prevProcesses, currProceses)
 
-			for pid, name := range added {
-				if ShouldIgnore(name) {
+			for _, proc := range added {
+				if ShouldIgnore(proc.Name) {
 					continue
 				}
 
 				ev := api.EventPayload{
-					Type: "process.creation",
-					Payload: map[string]any{
-						"pid":  pid,
-						"name": name,
-					},
+					Type:    "process.creation",
+					Payload: proc,
 				}
 
 				events.Emit(ev)
 			}
 
-			for pid, name := range removed {
-				if ShouldIgnore(name) {
+			for _, proc := range removed {
+				if ShouldIgnore(proc.Name) {
 					continue
 				}
 
 				ev := api.EventPayload{
-					Type: "process.terminate",
-					Payload: map[string]any{
-						"pid":  pid,
-						"name": name,
-					},
+					Type:    "process.terminate",
+					Payload: proc,
 				}
 
 				events.Emit(ev)
@@ -89,9 +120,9 @@ func Run(cfg config.Config) {
 	}()
 }
 
-func FindDifference(m1 map[int]string, m2 map[int]string) (added, removed map[int]string) {
-	added = make(map[int]string)
-	removed = make(map[int]string)
+func FindDifference(m1 map[int]ProcessInfo, m2 map[int]ProcessInfo) (added, removed map[int]ProcessInfo) {
+	added = make(map[int]ProcessInfo)
+	removed = make(map[int]ProcessInfo)
 
 	for k, v := range m2 {
 		_, exist := m1[k]

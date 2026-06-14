@@ -32,11 +32,14 @@ export default function EventTable({ events, handleBadgeClick }: { events: Event
                     </TableCell>
                     <TableCell>
                         <div className="flex flex-wrap gap-1">
-                            {Object.entries(event.context).map(([k, v]) => (
+                            {Object.entries(event.context).slice(0, 2).map(([k, v]) => (
                                 <span key={k} className="font-mono text-xs text-muted-foreground">
-                                    <span className="text-foreground">{k}</span>={String(v)}
+                                    <span className="text-foreground">{k}</span>={truncate(String(v), 20)}
                                 </span>
                             ))}
+                            {Object.keys(event.context).length > 2 && (
+                                <span className="text-xs text-muted-foreground">+{Object.keys(event.context).length - 2} more</span>
+                            )}
                         </div>
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground max-w-md">
