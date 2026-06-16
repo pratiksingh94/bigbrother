@@ -1,11 +1,17 @@
+"use client"
+
 import { Event, EventsResponse } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { formatLastSeen } from "@/lib/agent-utils";
 import { Badge } from "../ui/badge";
 import { truncate } from "@/lib/event-utils";
+import { useState } from "react";
+import { EventSheet } from "./EventSheet";
 
 export default function EventTable({ events, handleBadgeClick }: { events: Event[] | undefined, handleBadgeClick: (ev: string) => void; }) {
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
     return (
+        <>
         <Table>
         <TableHeader>
             <TableRow>
@@ -18,7 +24,7 @@ export default function EventTable({ events, handleBadgeClick }: { events: Event
         </TableHeader>
         <TableBody>
             {events?.map(event => (
-                <TableRow key={event.id}>
+                <TableRow key={event.id} onClick={() => setSelectedEvent(event)} className="cursor-pointer">
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                         {formatLastSeen(event.created_at)}
                     </TableCell>
@@ -26,7 +32,11 @@ export default function EventTable({ events, handleBadgeClick }: { events: Event
                         {event.host.hostname}
                     </TableCell>
                     <TableCell>
-                        <button onClick={() => handleBadgeClick(event.event_type)} className="cursor-pointer">
+                        <button onClick={(e) => {
+                            e.stopPropagation()
+                            handleBadgeClick(event.event_type)
+                        }} 
+                        className="cursor-pointer">
                             <Badge variant="secondary">{event.event_type}</Badge>
                         </button>
                     </TableCell>
@@ -49,5 +59,14 @@ export default function EventTable({ events, handleBadgeClick }: { events: Event
             ))}
         </TableBody>
     </Table>
+
+    {selectedEvent && (
+        <EventSheet
+        event={selectedEvent}
+        open={!!selectedEvent}
+        onOpenChange={(open) => { if(!open) setSelectedEvent(null) }}
+        />
+    )}
+        </>
     )
 }
