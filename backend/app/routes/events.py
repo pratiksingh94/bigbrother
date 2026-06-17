@@ -33,3 +33,10 @@ async def get_events(
             EventResponse.model_validate(event) for event in events
         ]
     }
+
+@router.get("/{id}")
+async def get_event(id: int,db: Session = Depends(get_db)):
+    stmt = select(Event).where(Event.id == id)
+    ev = db.execute(stmt).scalar_one_or_none()
+
+    return ev

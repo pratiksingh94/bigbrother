@@ -8,7 +8,7 @@ import { truncate } from "@/lib/event-utils";
 import { useState } from "react";
 import { EventSheet } from "./EventSheet";
 
-export default function EventTable({ events, handleBadgeClick }: { events: Event[] | undefined, handleBadgeClick: (ev: string) => void; }) {
+export default function EventTable({ events, handleBadgeClick }: { events: Event[] | undefined, handleBadgeClick?: (ev: string) => void; }) {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
     return (
         <>
@@ -34,7 +34,7 @@ export default function EventTable({ events, handleBadgeClick }: { events: Event
                     <TableCell>
                         <button onClick={(e) => {
                             e.stopPropagation()
-                            handleBadgeClick(event.event_type)
+                            handleBadgeClick?.(event.event_type)
                         }} 
                         className="cursor-pointer">
                             <Badge variant="secondary">{event.event_type}</Badge>

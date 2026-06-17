@@ -33,3 +33,19 @@ export interface Event {
 export interface EventsResponse {
     events: Event[]
 }
+
+
+
+export interface Detection {
+    id: number;
+    rule_name: string;
+    status: string;
+    severity: string;
+    triggering_events: Event[]
+    context: Record<string, unknown>;
+    created_at: string;
+}
+
+export interface DetectionsResponse {
+    detections: Detection[]
+}
