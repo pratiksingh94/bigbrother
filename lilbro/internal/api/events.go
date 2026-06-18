@@ -6,11 +6,19 @@ import (
 	"fmt"
 	"lilbro/internal/config"
 	"net/http"
+	"time"
 )
 
+type LogPayload struct {
+	Source     string    `json:"source"`
+	Raw        string    `json:"raw"`
+	IngestedAt time.Time `json:"ingested_at"`
+}
+
 type EventPayload struct {
-	Type    string `json:"event_type"`
-	Payload any    `json:"payload"`
+	Type    string      `json:"event_type"`
+	Payload any         `json:"payload"`
+	Log     *LogPayload `json:"log,omitempty"`
 }
 
 func SendEvent(cfg config.Config, payload EventPayload) error {

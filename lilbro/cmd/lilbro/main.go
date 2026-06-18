@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"lilbro/internal/agent"
+	"lilbro/internal/collectors/auth"
 	"lilbro/internal/collectors/processes"
 	"lilbro/internal/config"
 	"lilbro/internal/events"
@@ -23,6 +24,8 @@ func main() {
 	agent.RunHeartbeatLoop(cfg)
 
 	processes.Run(cfg)
+
+	auth.Run()
 
 	select {}
 }
