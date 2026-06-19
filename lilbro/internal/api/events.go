@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"lilbro/internal/config"
 	"net/http"
-	"time"
 )
 
 type LogPayload struct {
-	Source     string    `json:"source"`
-	Raw        string    `json:"raw"`
-	IngestedAt time.Time `json:"ingested_at"`
+	Source     string `json:"source"`
+	Raw        string `json:"raw"`
+	IngestedAt string `json:"ingested_at"`
 }
 
 type EventPayload struct {
@@ -33,6 +32,9 @@ func SendEvent(cfg config.Config, payload EventPayload) error {
 	if err != nil {
 		return fmt.Errorf("sending event: %w", err)
 	}
+
+	// respBody, _ := io.ReadAll(resp.Body)
+	// fmt.Println(resp.StatusCode, string(respBody))
 
 	defer resp.Body.Close()
 

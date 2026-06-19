@@ -32,11 +32,14 @@ func Run() {
 		}
 
 		event_type, payload := ParseLine(message)
+		if payload == nil {
+			continue
+		}
 
 		logInfo := api.LogPayload{
 			Source:     "systemd-journald",
 			Raw:        message,
-			IngestedAt: time.UnixMicro(microseconds),
+			IngestedAt: time.UnixMicro(microseconds).Format(time.RFC3339),
 		}
 		ev := api.EventPayload{
 			Type:    event_type,

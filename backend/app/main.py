@@ -8,7 +8,7 @@ from app.db import Base, engine, get_db
 from app.routes.agents import router as agent_router
 from app.routes.events import router as event_router
 from app.routes.detections import router as detection_router
-from app.detection.run_detection import run_detection
+from app.detection.run_detection import run_detection, run_threshold_detection
 
 
 Base.metadata.create_all(bind=engine)
@@ -24,6 +24,7 @@ app.include_router(detection_router, prefix="/detections", tags=["Detections"])
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(run_detection, "interval", seconds=30)
+scheduler.add_job(run_threshold_detection, "interval", seconds=30)
 scheduler.start()
 
 @app.get("/")

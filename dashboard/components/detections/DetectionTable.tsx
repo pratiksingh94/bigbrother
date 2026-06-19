@@ -5,11 +5,15 @@ import { Badge } from "../ui/badge";
 import { severityBadgeClass } from "@/lib/detections-utils";
 
 export default function DetectionTable({ detections }: { detections: Detection[] }) {
+    const redirectToDetails = (id: number) => {
+        window.location.href = `/detections/${id}`
+    }
     return (
         <Table>
             <TableHeader>
                 <TableRow>
                     <TableHead>Time</TableHead>
+                    <TableHead>Rule Name</TableHead>
                     <TableHead>Event Type</TableHead>
                     <TableHead>Host</TableHead>
                     <TableHead>Severity</TableHead>
@@ -18,10 +22,11 @@ export default function DetectionTable({ detections }: { detections: Detection[]
             </TableHeader>
             <TableBody>
                 {detections.map(d => (
-                    <TableRow key={d.id}>
+                    <TableRow key={d.id} onClick={() => redirectToDetails(d.id)} className="cursor-pointer">
                         <TableCell className="whitespace-nowrap text-muted-foreground">
                             {formatLastSeen(d.created_at)}
                         </TableCell>
+                        <TableCell className="font-medium">{d.rule_name}</TableCell>
                         <TableCell>
                             <Badge variant="secondary">{d.triggering_events[0].event_type}</Badge>
                         </TableCell>

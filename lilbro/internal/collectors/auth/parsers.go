@@ -20,6 +20,10 @@ func ParseFailedPassword(line string) map[string]any {
 	re := regexp.MustCompile(`Failed password for (?:(?P<invalid>invalid user) )?(?P<user>\S+) from (?P<ip>\S+) port (?P<port>\d+)`)
 	match := re.FindStringSubmatch(line)
 
+	if match == nil {
+		return nil
+	}
+
 	invalid := helpers.GetNamedGroup(re, match, "invalid")
 	user := helpers.GetNamedGroup(re, match, "user")
 	ip := helpers.GetNamedGroup(re, match, "ip")
@@ -44,6 +48,10 @@ func ParseAcceptedPassword(line string) map[string]any {
 	// Jun 18 20:09:33 archlinux sshd-session[75803]: Accepted password for plutonium from ::1 port 41200 ssh2
 	re := regexp.MustCompile(`Accepted password for (?P<user>\S+) from (?P<ip>\S+) port (?P<port>\d+)`)
 	match := re.FindStringSubmatch(line)
+
+	if match == nil {
+		return nil
+	}
 
 	user := helpers.GetNamedGroup(re, match, "user")
 	ip := helpers.GetNamedGroup(re, match, "ip")
