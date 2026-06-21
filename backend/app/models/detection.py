@@ -2,7 +2,7 @@ from app.db import Base
 from sqlalchemy import String, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict
 
 class Detection(Base):
@@ -13,4 +13,4 @@ class Detection(Base):
     events: Mapped[List[int]] = mapped_column(JSONB)
     context: Mapped[Dict] = mapped_column(JSONB)
     status: Mapped[str] = mapped_column(default="open")
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

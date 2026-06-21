@@ -12,13 +12,13 @@ import (
 )
 
 type ProcessInfo struct {
-	PID        int
-	PPID       int
-	Name       string
-	CmdLine    string
-	User       string
-	Cwd        string
-	CreateTime string
+	PID        int    `json:"pid"`
+	PPID       int    `json:"ppid"`
+	Name       string `json:"name"`
+	CmdLine    string `json:"cmdline"`
+	User       string `json:"user"`
+	Cwd        string `json:"cwd"`
+	CreateTime string `json:"create_time"`
 }
 
 func Run(cfg config.Config) {
@@ -45,7 +45,7 @@ func Run(cfg config.Config) {
 				CmdLine:    cmdline,
 				User:       user,
 				Cwd:        cwd,
-				CreateTime: time.UnixMilli(createTime).Format(time.RFC3339),
+				CreateTime: time.UnixMilli(createTime).UTC().Format(time.RFC3339),
 			}
 		}
 	}
@@ -82,7 +82,7 @@ func Run(cfg config.Config) {
 					CmdLine:    cmdline,
 					User:       user,
 					Cwd:        cwd,
-					CreateTime: time.UnixMilli(createTime).Format(time.RFC3339),
+					CreateTime: time.UnixMilli(createTime).UTC().Format(time.RFC3339),
 				}
 			}
 

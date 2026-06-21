@@ -1,6 +1,6 @@
 from app.db import Base
 
-from sqlalchemy import String, func
+from sqlalchemy import String, func, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
@@ -15,4 +15,4 @@ class Rule(Base):
     conditions: Mapped[Dict] = mapped_column(JSONB)
     severity: Mapped[str]
     enabled: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

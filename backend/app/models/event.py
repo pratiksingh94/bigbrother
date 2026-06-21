@@ -1,5 +1,5 @@
 from app.db import Base
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime, String, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB
@@ -15,4 +15,4 @@ class Event(Base):
     log: Mapped[Optional["Log"]] = relationship()
     event_type: Mapped[str] = mapped_column(String())
     payload: Mapped[Dict[str, Any]] = mapped_column(JSONB)
-    created_at: Mapped[datetime] = mapped_column(DateTime(), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

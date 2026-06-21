@@ -28,7 +28,7 @@ func Run() {
 
 		microseconds, err := strconv.ParseInt(tsStr, 10, 64)
 		if err != nil {
-			microseconds = time.Now().UnixMicro()
+			microseconds = time.Now().UTC().UnixMicro()
 		}
 
 		event_type, payload := ParseLine(message)
@@ -39,7 +39,7 @@ func Run() {
 		logInfo := api.LogPayload{
 			Source:     "systemd-journald",
 			Raw:        message,
-			IngestedAt: time.UnixMicro(microseconds).Format(time.RFC3339),
+			IngestedAt: time.UnixMicro(microseconds).UTC().Format(time.RFC3339),
 		}
 		ev := api.EventPayload{
 			Type:    event_type,
