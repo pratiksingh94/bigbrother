@@ -11,6 +11,22 @@ services:
         
         volumes:
             - postgres_data:/var/lib/postgresql
+    
+    backend:
+        build: ./backend
+        depends_on:
+            - postgres
+        environment:
+            - DATABASE_URL=postgresql://bigbrother:bigbrother@postgres/bigbrother
+        ports:
+            - "8000:8000"
+
+    dashboard:
+        build: ./dashboard
+        environment:
+            - NEXT_PUBLIC_API_URL=http://localhost:8000
+        ports:
+            - "3000:3000"
 
 volumes:
     postgres_data:
