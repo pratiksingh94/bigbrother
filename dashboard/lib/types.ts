@@ -49,3 +49,28 @@ export interface Detection {
 export interface DetectionsResponse {
     detections: Detection[]
 }
+
+
+
+
+
+export interface Rule {
+    id: number;
+    name: string;
+    rule_type: "match" | "threshold";
+    event_type: string;
+    conditions: Record<string, unknown>;
+    severity: "Low" | "Medium" | "High";
+    enabled: boolean;
+    created_at: string;
+}
+export interface RulesResponse {
+    rules: Rule[]
+}
+export interface RuleCreation {
+    name: string;
+    rule_type: "match" | "threshold";
+    event_type: string;
+    conditions: Record<string, unknown>;
+    severity: "Low" | "Medium" | "High";
+}

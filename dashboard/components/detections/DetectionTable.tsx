@@ -1,12 +1,17 @@
+"use client"
+
 import { Detection, DetectionsResponse } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { formatLastSeen } from "@/lib/agent-utils";
 import { Badge } from "../ui/badge";
 import { severityBadgeClass } from "@/lib/detections-utils";
+import { useRouter } from "next/navigation";
+
 
 export default function DetectionTable({ detections }: { detections: Detection[] }) {
+    const router = useRouter()
     const redirectToDetails = (id: number) => {
-        window.location.href = `/detections/${id}`
+        router.push(`/detections/${id}`)
     }
     return (
         <Table>

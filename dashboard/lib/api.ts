@@ -1,4 +1,4 @@
-import { Agent, AgentsResponse, Detection, DetectionsResponse, Event, EventsResponse } from "./types";
+import { Agent, AgentsResponse, Detection, DetectionsResponse, Event, EventsResponse, Rule, RuleCreation, RulesResponse } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -50,4 +50,39 @@ export async function getDetection(id: number): Promise<Detection> {
     if(!res.ok) throw new Error("failed to fetch detection");
 
     return res.json()
+}
+
+export async function getRules(): Promise<RulesResponse> {
+    const res = await fetch(`${API_URL}/rules`)
+    if(!res.ok) throw new Error("failed to fetch rules");
+
+    return res.json()
+}
+
+export async function toggleRule(id: number) {
+    const res = await fetch(`${API_URL}/rules/${id}/toggle`, {
+        method: "PATCH"
+    })
+
+    if(!res.ok) throw new Error("failed to toggle rule");
+}
+
+export async function deleteRule(id: number) {
+    const res = await fetch(`${API_URL}/rules/${id}`, {
+        method: "DELETE"
+    })
+
+    if(!res.ok) throw new Error("failed to delete rule");
+}
+
+export async function createRule(rule: RuleCreation) {
+    const res = await fetch(`${API_URL}/rules`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(rule)
+    })
+
+    if (!res.ok) throw new Error("failed to create rule");
 }
