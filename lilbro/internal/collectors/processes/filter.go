@@ -17,7 +17,7 @@ var shellNames = map[string]bool{
 }
 
 var ignoredNames = map[string]bool{
-	"kitty": true, "alacritty": true, "gnome-terminal": true, "konsole": true, "xterm": true, "tmux": true, "screen": true, "Web Content": true, "WebExtensions": true, "Privileged Cont": true, "RDD Process": true, "Socket Process": true, "Utility Process": true, "bwrap": true, "gpu-process": true, "Isolated Service": true,
+	"kitty": true, "alacritty": true, "gnome-terminal": true, "konsole": true, "xterm": true, "tmux": true, "screen": true, "Web Content": true, "WebExtensions": true, "Privileged Cont": true, "RDD Process": true, "Socket Process": true, "Utility Process": true, "bwrap": true, "gpu-process": true, "Isolated Service": true, "kitten": true,
 }
 
 var ignoredParents = map[string]bool{

@@ -4,7 +4,7 @@ import { Detection, DetectionsResponse } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { formatLastSeen } from "@/lib/agent-utils";
 import { Badge } from "../ui/badge";
-import { severityBadgeClass } from "@/lib/detections-utils";
+import { severityBadgeClass, statusBadgeClass } from "@/lib/detections-utils";
 import { useRouter } from "next/navigation";
 
 
@@ -40,7 +40,7 @@ export default function DetectionTable({ detections }: { detections: Detection[]
                             <Badge variant="outline" className={severityBadgeClass(d.severity)}>{d.severity}</Badge>
                         </TableCell>
                         <TableCell>
-                            <Badge variant="secondary" className="capitalize">{d.status}</Badge>
+                            <Badge variant="secondary" className={statusBadgeClass(d.status)}>{d.status}</Badge>
                         </TableCell>
                     </TableRow>
                 ))}

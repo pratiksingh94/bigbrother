@@ -1,4 +1,4 @@
-
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.detection import Detection
 from app.models.event import Event
@@ -7,6 +7,7 @@ from app.schemas.detections import DetectionsResponse, DetectionResponse
 from app.schemas.events import EventResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select
+from typing import Literal
 
 router = APIRouter()
 
@@ -48,3 +49,20 @@ async def get_detection(id: int, db: Session = Depends(get_db)):
         created_at=detection.created_at,
         triggering_events=[EventResponse.model_validate(e) for e in triggering_events]
     )
+
+
+class StatusUpdate(BaseModel):
+    status: Literal["open", "resolved", "false-positive", "investigating"]
+
+@router.patch("/{id}/status")
+async def update_status(id: int, data: StatusUpdate, db: Session = Depends(get_db)):
+    stmt = select(Detection).where(Detection.id == id)
+    detection = db.execute(stmt).scalar_one_or_none()
+
+    if not detection:
+        raise HTTPException(status_code=404, detail="detection not found")
+    
+    detection.status = data.status
+    db.commit()
+
+    return {"status": "ok"}

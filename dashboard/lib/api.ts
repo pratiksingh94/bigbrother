@@ -52,6 +52,19 @@ export async function getDetection(id: number): Promise<Detection> {
     return res.json()
 }
 
+
+export async function updateDetectionStatus(id: number, status: string) {
+    const res = await fetch(`${API_URL}/detections/${id}/status`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status })
+    });
+    if(!res.ok) throw new Error("failed to update detection status");
+}
+
+
 export async function getRules(): Promise<RulesResponse> {
     const res = await fetch(`${API_URL}/rules`)
     if(!res.ok) throw new Error("failed to fetch rules");

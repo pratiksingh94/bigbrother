@@ -1,22 +1,29 @@
 "use client"
 
+import { StatusButton } from "@/components/detections/StatusButton"
 import EventTable from "@/components/events/EventTable"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatLastSeen } from "@/lib/agent-utils"
-import { getDetection } from "@/lib/api"
-import { severityBadgeClass } from "@/lib/detections-utils"
+import { getDetection, updateDetectionStatus } from "@/lib/api"
+import { severityBadgeClass, statusBadgeClass } from "@/lib/detections-utils"
 import { queryKeys } from "@/lib/query-keys"
-import { useQuery } from "@tanstack/react-query"
+import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { kMaxLength } from "buffer"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 export default function DetectionDetails({ id }: { id: number }) {
+    const quereyClient = useQueryClient()
     const { data, isLoading, error } = useQuery({
         queryKey: queryKeys.detection(id),
         queryFn: () => getDetection(id)
+    })
+
+    const statusMutation = useMutation({
+        mutationFn: (status: string) => updateDetectionStatus(id, status),
+        onSuccess: () => quereyClient.invalidateQueries({ queryKey: queryKeys.detection(id) })
     })
 
     if(isLoading) return <div>loading...</div>
@@ -41,9 +48,15 @@ export default function DetectionDetails({ id }: { id: number }) {
                 </div>
                 <div className="flex gap-2">
                     <Badge variant="outline" className={severityBadgeClass(data?.severity)}>{data.severity}</Badge>
-                    <Badge variant="secondary" className="capitalize">{data.status}</Badge>
+                    <Badge variant="secondary" className={statusBadgeClass(data.status)}>{data.status}</Badge>
                 </div>
             </div>
+
+            <StatusButton
+            currentStatus={data.status}
+            onStatusChange={(status) => statusMutation.mutate(status)}
+            isPending={statusMutation.isPending}
+            />
 
             <Card>
                 <CardHeader>
