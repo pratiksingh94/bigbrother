@@ -5,7 +5,6 @@ import (
 	"lilbro/internal/api"
 	"lilbro/internal/config"
 	"lilbro/internal/events"
-	"strings"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/process"
@@ -16,6 +15,7 @@ type ProcessInfo struct {
 	PPID       int    `json:"ppid"`
 	Name       string `json:"name"`
 	CmdLine    string `json:"cmdline"`
+	Exe        string `json:"exe"`
 	User       string `json:"user"`
 	Cwd        string `json:"cwd"`
 	CreateTime string `json:"create_time"`
@@ -30,6 +30,7 @@ func Run(cfg config.Config) {
 			name, _ := p.Name()
 			ppid, _ := p.Ppid()
 			cmdline, _ := p.Cmdline()
+			exe, _ := p.Exe()
 			user, _ := p.Username()
 			cwd, _ := p.Cwd()
 			createTime, _ := p.CreateTime()
@@ -43,6 +44,7 @@ func Run(cfg config.Config) {
 				PPID:       int(ppid),
 				Name:       name,
 				CmdLine:    cmdline,
+				Exe:        exe,
 				User:       user,
 				Cwd:        cwd,
 				CreateTime: time.UnixMilli(createTime).UTC().Format(time.RFC3339),
@@ -51,7 +53,7 @@ func Run(cfg config.Config) {
 	}
 
 	go func() {
-		ticker := time.NewTicker(10 * time.Second)
+		ticker := time.NewTicker(2 * time.Second)
 
 		defer ticker.Stop()
 
@@ -67,6 +69,7 @@ func Run(cfg config.Config) {
 				name, _ := p.Name()
 				ppid, _ := p.Ppid()
 				cmdline, _ := p.Cmdline()
+				exe, _ := p.Exe()
 				user, _ := p.Username()
 				cwd, _ := p.Cwd()
 				createTime, _ := p.CreateTime()
@@ -80,6 +83,7 @@ func Run(cfg config.Config) {
 					PID:        int(p.Pid),
 					PPID:       int(ppid),
 					CmdLine:    cmdline,
+					Exe:        exe,
 					User:       user,
 					Cwd:        cwd,
 					CreateTime: time.UnixMilli(createTime).UTC().Format(time.RFC3339),
@@ -89,7 +93,12 @@ func Run(cfg config.Config) {
 			added, removed := FindDifference(prevProcesses, currProceses)
 
 			for _, proc := range added {
-				if ShouldIgnore(proc.Name) {
+				parentName := ""
+				if parent, ok := currProceses[proc.PPID]; ok {
+					parentName = parent.Name
+				}
+
+				if ShouldIgnore(proc, parentName) {
 					continue
 				}
 
@@ -102,7 +111,11 @@ func Run(cfg config.Config) {
 			}
 
 			for _, proc := range removed {
-				if ShouldIgnore(proc.Name) {
+				parentName := ""
+				if parent, ok := prevProcesses[proc.PPID]; ok {
+					parentName = parent.Name
+				}
+				if ShouldIgnore(proc, parentName) {
 					continue
 				}
 
@@ -141,24 +154,18 @@ func FindDifference(m1 map[int]ProcessInfo, m2 map[int]ProcessInfo) (added, remo
 	return added, removed
 }
 
-func ShouldIgnore(name string) bool {
-	prefixes := []string{
-		"kworker/",
-		"ksoftirqd/",
-		"migration/",
-		"cpuhp/",
-		"idle_inject/",
-		"irq/",
-		"rcu_",
-		"card",
-		"sleep",
-	}
+// func ShouldIgnore(name string) bool {
+// 	ignoredProcesses := []string{
+// 		"kworker/", "ksoftirqd/", "migration/", "cpuhp/", "idle_inject/", "irq/", "rcu_",
+// 		"zsh", "bash", "sh", "kitty", "alacritty", "gnome-terminal", "konsole",
+// 		"fish", "tmux", "screen", "sleep",
+// 	}
 
-	for _, p := range prefixes {
-		if strings.HasPrefix(name, p) {
-			return true
-		}
-	}
+// 	for _, p := range ignoredProcesses {
+// 		if strings.Contains(name, p) {
+// 			return true
+// 		}
+// 	}
 
-	return false
-}
+// 	return false
+// }
