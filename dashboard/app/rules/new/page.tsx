@@ -34,7 +34,7 @@ export default function NewRulePage() {
     const handleSubmit = () => {
         const conditions = ruleType === "match"
         ? { field, in: values.split(",").map(v => v.trim()).filter(Boolean)}
-        : { group_by: groupBy, threshold, windows_seconds: windowSeconds }
+        : { group_by: groupBy, threshold, window_seconds: windowSeconds }
 
         mutation.mutate({
             name,
@@ -113,6 +113,12 @@ export default function NewRulePage() {
                 </Select>
             </div>
 
+
+            {mutation.error && (
+                <p className="text-sm text-destructive">
+                    {mutation.error.message}
+                </p>
+            )}
 
             <Button onClick={handleSubmit} disabled={mutation.isPending} className="cursor-pointer">
                 Create Rule

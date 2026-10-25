@@ -26,16 +26,25 @@ export default function DetectionTable({ detections }: { detections: Detection[]
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {detections.map(d => (
+                {detections.map(d => {
+                    // The events that triggered a detection can be gone by the
+                    // time it is read, so the first one is not guaranteed to exist.
+                    const trigger = d.triggering_events[0];
+
+                    return (
                     <TableRow key={d.id} onClick={() => redirectToDetails(d.id)} className="cursor-pointer">
                         <TableCell className="whitespace-nowrap text-muted-foreground">
                             {formatLastSeen(d.created_at)}
                         </TableCell>
                         <TableCell className="font-medium">{d.rule_name}</TableCell>
                         <TableCell>
-                            <Badge variant="secondary">{d.triggering_events[0].event_type}</Badge>
+                            {trigger
+                                ? <Badge variant="secondary">{trigger.event_type}</Badge>
+                                : <span className="text-xs text-muted-foreground">events unavailable</span>}
                         </TableCell>
-                        <TableCell className="font-medium">{d.triggering_events[0].host.hostname}</TableCell>
+                        <TableCell className="font-medium">
+                            {trigger?.host.hostname ?? "-"}
+                        </TableCell>
                         <TableCell>
                             <Badge variant="outline" className={severityBadgeClass(d.severity)}>{d.severity}</Badge>
                         </TableCell>
@@ -43,7 +52,8 @@ export default function DetectionTable({ detections }: { detections: Detection[]
                             <Badge variant="secondary" className={statusBadgeClass(d.status)}>{d.status}</Badge>
                         </TableCell>
                     </TableRow>
-                ))}
+                    )
+                })}
             </TableBody>
         </Table>
     )

@@ -1,6 +1,5 @@
 "use client"
 
-
 import EventTable from "@/components/events/EventTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,25 +10,51 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity } from "lucide-react";
 import { useCallback, useState } from "react";
 
+// A select item cannot have an empty value, so the "all agents" option needs
+// a sentinel of its own instead of an empty string.
+const ALL_AGENTS = "__all__";
+
+const DEFAULT_LIMIT = 50;
+
+interface Filters {
+    agentId: string;
+    type: string;
+    limit: number;
+}
+
+const DEFAULT_FILTERS: Filters = { agentId: "", type: "", limit: DEFAULT_LIMIT };
+
 export default function EventsPage() {
-    const [agentFilter, setAgentFilter] = useState("");
-    const [typeFilter, setTypeFilter] = useState("")
-    const [limit, setLimit] = useState("50")
-    const [appliedAgent, setAppliedAgent] = useState("")
-    // const [appliedType, setAppliedType] = useState("")
-    const [appliedLimit, setAppliedLimit] = useState(50)
+    // Draft values, only sent to the backend once they are applied.
+    const [agentFilter, setAgentFilter] = useState(ALL_AGENTS);
+    const [typeFilter, setTypeFilter] = useState("");
+    const [limit, setLimit] = useState(String(DEFAULT_LIMIT));
+    const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
     const applyFilters = useCallback(() => {
-        setAppliedAgent(agentFilter)
-        // setAppliedType(typeFilter)
+        const parsed = parseInt(limit, 10);
 
-        const n = parseInt(limit, 10)
-        setAppliedLimit(Number.isNaN(n) || n < 1 ? 50 : n);
-    }, [agentFilter, limit])
+        setFilters({
+            agentId: agentFilter === ALL_AGENTS ? "" : agentFilter,
+            type: typeFilter.trim(),
+            limit: Number.isNaN(parsed) || parsed < 1 ? DEFAULT_LIMIT : parsed,
+        });
+    }, [agentFilter, typeFilter, limit]);
+
+    const clearFilters = useCallback(() => {
+        setAgentFilter(ALL_AGENTS);
+        setTypeFilter("");
+        setLimit(String(DEFAULT_LIMIT));
+        setFilters(DEFAULT_FILTERS);
+    }, []);
 
     const { data, isLoading, error } = useQuery({
-        queryKey: queryKeys.events,
-        queryFn: getEvents,
+        queryKey: [...queryKeys.events, filters],
+        queryFn: () => getEvents({
+            limit: filters.limit,
+            agent_id: filters.agentId || undefined,
+            event_type: filters.type || undefined,
+        }),
         refetchInterval: 10000
     })
 
@@ -39,12 +64,16 @@ export default function EventsPage() {
         refetchInterval: 60000
     })
 
-    const filtered = data?.events.filter(e => !appliedAgent || e.host.hostname === appliedAgent).filter(e => !typeFilter || e.event_type.toLowerCase().includes(typeFilter.toLowerCase())).slice(0, appliedLimit)
+    // Clicking a type badge filters by that type right away.
+    const handleBadgeClick = useCallback((eventType: string) => {
+        setTypeFilter(eventType);
+        setFilters(prev => ({ ...prev, type: eventType }));
+    }, [])
 
-    const handleBadgeClick = (eventType: string) => {
-        setTypeFilter(eventType)
-        // setAppliedType(eventType)
-    }
+    const events = data?.events ?? []
+
+    if (isLoading) return <div className="text-sm text-muted-foreground">Loading...</div>
+    if (error) return <div className="text-sm text-destructive">Failed to load events.</div>
 
     return (
         <div className="flex flex-col gap-6">
@@ -59,9 +88,9 @@ export default function EventsPage() {
                             <SelectValue placeholder="All Hosts"/>
                         </SelectTrigger>
                         <SelectContent className="p-2">
-                            <SelectItem value=" " className="cursor-pointer">All Agents</SelectItem>
+                            <SelectItem value={ALL_AGENTS} className="cursor-pointer">All Agents</SelectItem>
                             {hosts?.agents.map(h => (
-                                <SelectItem key={h.id} value={h.hostname} className="cursor-pointer">{h.hostname}</SelectItem>
+                                <SelectItem key={h.id} value={h.id} className="cursor-pointer">{h.hostname}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -83,7 +112,7 @@ export default function EventsPage() {
                     <Input
                     type="number"
                     min={1}
-                    placeholder="50"
+                    placeholder={String(DEFAULT_LIMIT)}
                     value={limit}
                     onChange={e => setLimit(e.target.value)}
                     className="w-24"
@@ -91,25 +120,17 @@ export default function EventsPage() {
                 </div>
 
 
-                <Button variant="default" onClick={applyFilters}className="cursor-pointer">Apply</Button>
-                <Button variant="outline"  className="cursor-pointer" onClick={() => {
-                    // i will put these in a func later lmao
-                    setAgentFilter("")
-                    setTypeFilter("")
-                    setLimit("50")
-                    setAppliedAgent("")
-                    // setAppliedType("")
-                    setAppliedLimit(50)
-                }}>Clear</Button>
+                <Button variant="default" onClick={applyFilters} className="cursor-pointer">Apply</Button>
+                <Button variant="outline" onClick={clearFilters} className="cursor-pointer">Clear</Button>
             </div>
 
-            {filtered?.length === 0 ? (
+            {events.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-20">
                     <Activity className="h-12 w-12 text-muted-foreground"/>
-                    <p className="text-sm text-muted-foreground">No events matcing the currennt filter.</p>
+                    <p className="text-sm text-muted-foreground">No events matching the current filter.</p>
                 </div>
             ) : (
-                <EventTable events={filtered} handleBadgeClick={handleBadgeClick}/>
+                <EventTable events={events} handleBadgeClick={handleBadgeClick}/>
             )}
         </div>
     )

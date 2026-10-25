@@ -16,7 +16,7 @@ def get_rules(db: Session = Depends(get_db)):
 
 @router.post("", response_model=RuleResponse)
 def create_rule(req: RuleRequest, db: Session = Depends(get_db)):
-    rule = Rule(**req.model_dump())
+    rule = Rule(**req.model_dump(by_alias=True))
     db.add(rule)
     db.commit()
     db.refresh(rule)
@@ -28,7 +28,7 @@ def update_rule(id: int, req: RuleRequest, db: Session = Depends(get_db)):
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     
-    for k, v in req.model_dump().items():
+    for k, v in req.model_dump(by_alias=True).items():
         setattr(rule, k, v)
     
     db.commit()

@@ -10,7 +10,7 @@ from app.routes.agents import router as agent_router
 from app.routes.events import router as event_router
 from app.routes.detections import router as detection_router
 from app.routes.rules import router as rules_router
-from app.detection.run_detection import run_detection_engine
+from app.detection.engine import run_detection_engine
 
 
 Base.metadata.create_all(bind=engine)
