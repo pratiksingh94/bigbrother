@@ -8,6 +8,13 @@ export async function getRules(): Promise<RulesResponse> {
     return res.json();
 }
 
+export async function getRule(id: number): Promise<Rule> {
+    const res = await request(`/rules/${id}`);
+    if (!res.ok) throw new Error(await errorMessage(res, "failed to fetch rule"));
+
+    return res.json();
+}
+
 export async function createRule(rule: RuleCreation) {
     const res = await request("/rules", {}, {
         method: "POST",
@@ -18,6 +25,18 @@ export async function createRule(rule: RuleCreation) {
     });
 
     if (!res.ok) throw new Error(await errorMessage(res, "failed to create rule"));
+}
+
+export async function updateRule(id: number, rule: RuleCreation) {
+    const res = await request(`/rules/${id}`, {}, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(rule)
+    });
+
+    if (!res.ok) throw new Error(await errorMessage(res, "failed to update rule"));
 }
 
 export async function toggleRule(id: number) {

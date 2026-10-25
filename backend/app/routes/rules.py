@@ -14,6 +14,15 @@ def get_rules(db: Session = Depends(get_db)):
     return {"rules": rules}
 
 
+@router.get("/{id}", response_model=RuleResponse)
+def get_rule(id: int, db: Session = Depends(get_db)):
+    rule = db.scalar(select(Rule).where(Rule.id == id))
+    if not rule:
+        raise HTTPException(status_code=404, detail="Rule not found")
+
+    return rule
+
+
 @router.post("", response_model=RuleResponse)
 def create_rule(req: RuleRequest, db: Session = Depends(get_db)):
     rule = Rule(**req.model_dump(by_alias=True))

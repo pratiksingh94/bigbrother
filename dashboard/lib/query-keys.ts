@@ -10,5 +10,6 @@ export const queryKeys = {
     detections: ["detections"],
     detection: (id: number) => ["detections", id],
 
-    rules: ["rules"]
+    rules: ["rules"],
+    rule: (id: number) => ["rule", id]
 }

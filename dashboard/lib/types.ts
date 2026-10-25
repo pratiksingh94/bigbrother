@@ -81,4 +81,5 @@ export interface RuleCreation {
     event_type: string;
     conditions: Record<string, unknown>;
     severity: "Low" | "Medium" | "High";
+    enabled?: boolean;
 }
