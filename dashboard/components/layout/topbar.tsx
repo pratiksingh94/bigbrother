@@ -23,9 +23,8 @@ export default function Topbar() {
     useEffect(() => {
         async function ping() {
             try {
-                const res = await request("/", {}, { signal: AbortSignal.timeout(3000) })
+                const res = await request("/health", {}, { signal: AbortSignal.timeout(3000) })
                 setBackendOnline(res.ok)
-                console.log(res.ok)
             } catch {
                 setBackendOnline(false)
             }
