@@ -6,25 +6,35 @@ services:
             - POSTGRES_USER=bigbrother
             - POSTGRES_PASSWORD=bigbrother
 
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U bigbrother -d bigbrother"]
+            interval: 2s
+            timeout: 3s
+            retries: 15
+
         ports:
             - "5432:5432"
-        
+
         volumes:
             - postgres_data:/var/lib/postgresql
-    
+
     backend:
         build: ./backend
         depends_on:
-            - postgres
+            postgres:
+                condition: service_healthy
         environment:
             - DATABASE_URL=postgresql://bigbrother:bigbrother@postgres/bigbrother
         ports:
             - "8000:8000"
 
     dashboard:
-        build: ./dashboard
-        environment:
-            - NEXT_PUBLIC_API_URL=http://localhost:8000
+        build:
+            context: ./dashboard
+            args:
+                NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        depends_on:
+            - backend
         ports:
             - "3000:3000"
 

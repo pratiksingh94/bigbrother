@@ -1,10 +1,11 @@
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.detection.conditions import threshold_conditions
+from app.detection.payload import lookup
 from app.models.detection import Detection
 from app.models.event import Event
 from app.models.rule import Rule
@@ -24,7 +25,7 @@ def evaluate_threshold_rule(db: Session, rule: Rule) -> None:
 
     grouped = defaultdict(list)
     for event in events:
-        key = event.payload.get(conditions.group_by)
+        key = lookup(event.payload, conditions.group_by)
         if key is None:
             # The event does not carry the field the rule groups by, so it
             # cannot belong to any group.
@@ -61,6 +62,6 @@ def _open_detection(
         select(Detection).where(
             Detection.rule_name == rule.name,
             Detection.status == "open",
-            Detection.context[group_by].astext == str(key),
+            func.lower(Detection.context[group_by].astext) == str(key).lower(),
         )
     )
