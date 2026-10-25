@@ -3,18 +3,23 @@
 import DashboardCard from "@/components/stats/DashboardCards"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatLastSeen, statusBadge } from "@/lib/agent-utils"
-import { getAgent } from "@/lib/api"
+import { formatLastSeen, formatNumber, formatRelative, statusBadge } from "@/lib/agent-utils"
+import { getAgent, getAgentStats } from "@/lib/api"
 import { queryKeys } from "@/lib/query-keys"
 import { useQuery } from "@tanstack/react-query"
-import { Activity, AlertTriangle, ArrowLeft, Clock, Cpu } from "lucide-react"
+import { Activity, AlertTriangle, ArrowLeft, Clock, Cpu, Timer } from "lucide-react"
 import Link from "next/link"
-import { notFound } from "next/navigation"
 
 export default function AgentDetails({ id }: { id: string }) {
     const { data, isLoading, error } = useQuery({
         queryKey: queryKeys.agent(id),
-        queryFn: () => getAgent(id)
+        queryFn: () => getAgent(id),
+        refetchInterval: 10000
+    })
+
+    const { data: stats } = useQuery({
+        queryKey: queryKeys.agentStats(id),
+        queryFn: () => getAgentStats(id)
     })
 
     // if(!data) notFound();
@@ -30,15 +35,13 @@ export default function AgentDetails({ id }: { id: string }) {
         return <div>no data? huh</div>
     }
 
-    
-
-
-    // random bs for now
-    const stats = [
-        { label: "Logs (24h)", value: "1,234", icon: Activity },
-        { label: "Alerts (24h)", value: "3", icon: AlertTriangle },
-        { label: "Processes", value: "132", icon: Cpu },
-        { label: "Uptime", value: "14d 6h", icon: Clock },
+    const windowLabel = stats ? `${stats.window_hours}h` : "24h"
+    const cards = [
+        { label: `Events (${windowLabel})`, value: stats ? formatNumber(stats.events) : undefined, icon: Activity },
+        { label: `Detections (${windowLabel})`, value: stats ? formatNumber(stats.detections) : undefined, icon: AlertTriangle },
+        { label: `Processes (${windowLabel})`, value: stats ? formatNumber(stats.processes) : undefined, icon: Cpu },
+        { label: "Total Events", value: stats ? formatNumber(stats.total_events) : undefined, icon: Timer },
+        { label: "Last Seen", value: formatRelative(data.last_seen), icon: Clock },
     ]
 
     return (
@@ -57,8 +60,8 @@ export default function AgentDetails({ id }: { id: string }) {
                 {statusBadge(data.status)}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-4">
-                {stats.map(s => (
+            <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
+                {cards.map(s => (
                     <DashboardCard label={s.label} value={s.value} icon={s.icon} key={s.label}/>
                 ))}
             </div>

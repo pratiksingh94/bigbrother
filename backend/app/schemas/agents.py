@@ -22,3 +22,11 @@ class AgentHeartbeat(BaseModel):
     hostname: str
     os_name: str
     kernel_version: str
+
+
+class AgentStats(BaseModel):
+    events: int
+    detections: int
+    processes: int
+    window_hours: int
+    total_events: int

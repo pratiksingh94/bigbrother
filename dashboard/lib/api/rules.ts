@@ -1,15 +1,15 @@
 import { Rule, RuleCreation, RulesResponse } from "../types";
-import { apiUrl, errorMessage } from "./client";
+import { errorMessage, request } from "./client";
 
 export async function getRules(): Promise<RulesResponse> {
-    const res = await fetch(apiUrl("/rules"));
+    const res = await request("/rules");
     if (!res.ok) throw new Error(await errorMessage(res, "failed to fetch rules"));
 
     return res.json();
 }
 
 export async function createRule(rule: RuleCreation) {
-    const res = await fetch(apiUrl("/rules"), {
+    const res = await request("/rules", {}, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -21,17 +21,13 @@ export async function createRule(rule: RuleCreation) {
 }
 
 export async function toggleRule(id: number) {
-    const res = await fetch(apiUrl(`/rules/${id}/toggle`), {
-        method: "PATCH"
-    });
+    const res = await request(`/rules/${id}/toggle`, {}, { method: "PATCH" });
 
     if (!res.ok) throw new Error(await errorMessage(res, "failed to toggle rule"));
 }
 
 export async function deleteRule(id: number) {
-    const res = await fetch(apiUrl(`/rules/${id}`), {
-        method: "DELETE"
-    });
+    const res = await request(`/rules/${id}`, {}, { method: "DELETE" });
 
     if (!res.ok) throw new Error(await errorMessage(res, "failed to delete rule"));
 }

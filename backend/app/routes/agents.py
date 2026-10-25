@@ -9,8 +9,9 @@ from app.db import get_db
 from app.models.agent import Agent
 from app.models.event import Event
 from app.models.log import Log
-from app.utils.agents import get_presence
-from app.schemas.agents import AgentHeartbeat, AgentsResponse, Agent as AgentResp
+from app.utils.agents import as_utc, get_presence
+from app.utils.stats import collect_agent_stats
+from app.schemas.agents import AgentHeartbeat, AgentsResponse, AgentStats, Agent as AgentResp
 from app.schemas.events import EventsResponse, EventsRequest, EventResponse, LogSchema
 
 router = APIRouter()
@@ -29,8 +30,8 @@ async def get_agents(db: Session = Depends(get_db)):
                 os_name=agent.os_name,
                 kernel_version=agent.kernel_version,
                 ip_address=agent.ip_address,
-                registered_at=agent.registered_at,
-                last_seen=agent.last_seen,
+                registered_at=as_utc(agent.registered_at),
+                last_seen=as_utc(agent.last_seen),
                 status=get_presence(agent.last_seen)
             ) for agent in agents
         ]
@@ -74,7 +75,30 @@ async def agent_info(id: str, db: Session = Depends(get_db)):
     stmt = select(Agent).where(Agent.id == id)
     agent = db.execute(stmt).scalar_one_or_none()
 
-    return agent
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    return AgentResp(
+        id=agent.id,
+        hostname=agent.hostname,
+        os_name=agent.os_name,
+        kernel_version=agent.kernel_version,
+        ip_address=agent.ip_address,
+        registered_at=as_utc(agent.registered_at),
+        last_seen=as_utc(agent.last_seen),
+        status=get_presence(agent.last_seen),
+    )
+
+
+@router.get("/{id}/stats", response_model=AgentStats)
+async def agent_stats(id: str, db: Session = Depends(get_db)):
+    stmt = select(Agent).where(Agent.id == id)
+    agent = db.execute(stmt).scalar_one_or_none()
+
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    return collect_agent_stats(db, agent)
 
 
 @router.post("/{id}/events")

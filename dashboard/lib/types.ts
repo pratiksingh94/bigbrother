@@ -13,6 +13,14 @@ export interface AgentsResponse {
     agents: Agent[]
 }
 
+export interface AgentStats {
+    events: number;
+    detections: number;
+    processes: number;
+    window_hours: number;
+    total_events: number;
+}
+
 
 export interface Event {
     id: number;

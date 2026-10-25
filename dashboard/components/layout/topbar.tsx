@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { request } from "@/lib/api"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { SidebarTrigger } from "../ui/sidebar"
@@ -22,7 +23,7 @@ export default function Topbar() {
     useEffect(() => {
         async function ping() {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/`, { signal: AbortSignal.timeout(3000) })
+                const res = await request("/", {}, { signal: AbortSignal.timeout(3000) })
                 setBackendOnline(res.ok)
                 console.log(res.ok)
             } catch {
