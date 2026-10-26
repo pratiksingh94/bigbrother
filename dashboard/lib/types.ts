@@ -75,6 +75,45 @@ export interface Rule {
 export interface RulesResponse {
     rules: Rule[]
 }
+
+export type Severity = "Low" | "Medium" | "High";
+
+export type AlertChannelKind = "webhook" | "slack" | "discord";
+
+export interface AlertChannel {
+    id: string;
+    name: string;
+    kind: AlertChannelKind;
+    /** The url with its secret hidden, the real one is never sent out. */
+    url_masked: string;
+    enabled: boolean;
+    min_severity: Severity;
+    created_at: string;
+}
+
+export interface AlertChannelInput {
+    name: string;
+    kind: AlertChannelKind;
+    url: string;
+    enabled: boolean;
+    min_severity: Severity;
+}
+
+export interface AlertNotification {
+    id: number;
+    detection_id: number;
+    channel_id: string;
+    channel_name: string;
+    status: string;
+    error: string | null;
+    attempts: number;
+    sent_at: string;
+}
+
+export interface AlertTestResult {
+    ok: boolean;
+    error: string | null;
+}
 export interface RuleCreation {
     name: string;
     rule_type: "match" | "threshold";

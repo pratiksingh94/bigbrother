@@ -2,3 +2,5 @@ backend/venv
 .env
 .vscode
 __pycache__
+
+scripts/webhook_receiver.py

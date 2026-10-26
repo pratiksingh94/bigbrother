@@ -23,7 +23,7 @@ func RunHeartbeatLoop(cfg config.Config) {
 		defer ticker.Stop()
 
 		// sending once then timer starts
-		err := api.SendHeartbeat(cfg.ServerURL, payload)
+		err := api.SendHeartbeat(cfg, payload)
 		if err != nil {
 			fmt.Println("error in heartbeat:", err)
 		} else {
@@ -31,7 +31,7 @@ func RunHeartbeatLoop(cfg config.Config) {
 		}
 
 		for range ticker.C {
-			err := api.SendHeartbeat(cfg.ServerURL, payload)
+			err := api.SendHeartbeat(cfg, payload)
 
 			if err != nil {
 				fmt.Println("error in heartbeat:", err)

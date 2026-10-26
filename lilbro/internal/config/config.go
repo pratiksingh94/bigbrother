@@ -1,10 +1,12 @@
 package config
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -22,32 +24,33 @@ func CreateConfig() error {
 
 	appDir := filepath.Join(configDir, "lilbro")
 
-	err = os.MkdirAll(appDir, 0755)
+	err = os.MkdirAll(appDir, 0700)
 	if err != nil {
 		return err
 	}
 
 	path := filepath.Join(appDir, "config.json")
 
-	var serverURL string
+	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Enter Big Brother server URL: ")
-	_, err = fmt.Scan(&serverURL)
-
+	serverURL, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("Error reading input:", err)
 		return err
 	}
 
-	id := uuid.NewString()
-	cfg := Config{ID: id, ServerURL: serverURL}
+	cfg := Config{
+		ID:        uuid.NewString(),
+		ServerURL: strings.TrimSpace(serverURL),
+	}
 
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0600)
 
 }
 

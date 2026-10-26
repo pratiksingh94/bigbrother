@@ -1,11 +1,10 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
-from uuid import UUID
 from typing import Dict, Any
 
 
 class HostSummary(BaseModel):
-    id: UUID
+    id: str
     hostname: str
 
     model_config = ConfigDict(from_attributes=True)

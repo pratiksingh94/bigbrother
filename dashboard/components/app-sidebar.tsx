@@ -1,6 +1,6 @@
 "use client"
 
-import { Activity, AlertTriangle, Eye, LayoutDashboard, Monitor, Scroll } from "lucide-react";
+import { Activity, AlertTriangle, Bell, Eye, LayoutDashboard, Monitor, Scroll } from "lucide-react";
 import {Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { NavMain } from "./nav-main";
@@ -10,7 +10,8 @@ const navMain = [
   { title: "Agents", url: "/agents", icon: <Monitor/> },
   { title: "Events", url: "/events", icon: <Activity/> },
   { title: "Detections", url: "/detections", icon: <AlertTriangle/>},
-  { title: "Rules", url: "/rules", icon: <Scroll/>}
+  { title: "Rules", url: "/rules", icon: <Scroll/>},
+  { title: "Alerts", url: "/alerts", icon: <Bell/>}
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

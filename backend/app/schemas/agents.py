@@ -1,10 +1,9 @@
 from pydantic import BaseModel, ConfigDict
-from uuid import UUID
 from datetime import datetime
 
 class Agent(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    id: UUID
+    id: str
     hostname: str
     os_name: str
     kernel_version: str

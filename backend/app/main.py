@@ -6,8 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.db import Base, SessionLocal, engine, wait_for_database
+from app.alerts.dispatcher import notify_recent_detections
 from app.detection.engine import run_detection_engine
 from app.routes.agents import router as agent_router
+from app.routes.alerts import router as alerts_router
 from app.routes.detections import router as detection_router
 from app.routes.events import router as event_router
 from app.routes.health import router as health_router
@@ -39,6 +41,7 @@ app.add_middleware(
 
 app.include_router(health_router, tags=["System"])
 app.include_router(agent_router, prefix="/agents", tags=["Agents"])
+app.include_router(alerts_router, prefix="/alerts", tags=["Alerts"])
 app.include_router(event_router, prefix="/events", tags=["Events"])
 app.include_router(detection_router, prefix="/detections", tags=["Detections"])
 app.include_router(rules_router, prefix="/rules", tags=["Rules"])
@@ -46,4 +49,5 @@ app.include_router(rules_router, prefix="/rules", tags=["Rules"])
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(run_detection_engine, "interval", seconds=30)
+scheduler.add_job(notify_recent_detections, "interval", seconds=30)
 scheduler.start()

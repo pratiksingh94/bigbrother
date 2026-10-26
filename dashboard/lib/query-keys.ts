@@ -11,5 +11,8 @@ export const queryKeys = {
     detection: (id: number) => ["detections", id],
 
     rules: ["rules"],
-    rule: (id: number) => ["rule", id]
+    rule: (id: number) => ["rule", id],
+
+    alertChannels: ["alertChannels"],
+    alertNotifications: ["alertNotifications"]
 }
