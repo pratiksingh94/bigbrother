@@ -44,7 +44,9 @@ export default function DetectionDetails({ id }: { id: number }) {
             <div className="flex items-start justify-between">
                 <div className="flex flex-col gap-1">
                     <h1 className="text-2xl font-semibold">{data?.rule_name}</h1>
-                    <p className="text-sm text-muted-foreground">Detection #{data?.id} - {formatLastSeen(data?.created_at as string)}</p>
+                    <p className="text-sm text-muted-foreground">
+                        Detection #{data?.id} · first seen {formatLastSeen(data?.created_at as string)}
+                    </p>
                 </div>
                 <div className="flex gap-2">
                     <Badge variant="outline" className={severityBadgeClass(data?.severity)}>{data.severity}</Badge>

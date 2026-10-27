@@ -17,7 +17,7 @@ export default function DetectionTable({ detections }: { detections: Detection[]
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Time</TableHead>
+                    <TableHead>First seen</TableHead>
                     <TableHead>Rule Name</TableHead>
                     <TableHead>Event Type</TableHead>
                     <TableHead>Host</TableHead>
