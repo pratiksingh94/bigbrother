@@ -1,0 +1,47 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: lilbro/go.mod
+
+      - name: build the agent
+        working-directory: lilbro
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -eu
+          mkdir -p ../dist
+
+          for target in linux/amd64 linux/arm64; do
+            os="${target%/*}"
+            arch="${target#*/}"
+            asset="lilbro-${os}-${arch}"
+            echo "building ${asset}"
+            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" \
+              go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" \
+              -o "../dist/${asset}" ./cmd/lilbro
+          done
+
+      - name: checksums
+        working-directory: lilbro
+        run: sha256sum lilbro-* > ../dist/checksums.txt
+
+      - name: publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

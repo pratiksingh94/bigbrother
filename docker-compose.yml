@@ -1,6 +1,7 @@
 services:
     postgres:
         image: postgres:18
+        restart: unless-stopped
         environment:
             - POSTGRES_DB=bigbrother
             - POSTGRES_USER=bigbrother
@@ -19,7 +20,9 @@ services:
             - postgres_data:/var/lib/postgresql
 
     backend:
+        image: ghcr.io/pratiksingh94/bigbrother-backend:latest
         build: ./backend
+        restart: unless-stopped
         depends_on:
             postgres:
                 condition: service_healthy
@@ -35,10 +38,12 @@ services:
             - "127.0.0.1:8000:8000"
 
     dashboard:
+        image: ghcr.io/pratiksingh94/bigbrother-dashboard:latest
         build:
             context: ./dashboard
             args:
                 NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        restart: unless-stopped
         depends_on:
             backend:
                 condition: service_healthy

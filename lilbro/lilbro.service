@@ -1,0 +1,18 @@
+[Unit]
+Description=Big Brother agent
+Documentation=https://github.com/pratiksingh94/bigbrother
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/lilbro --config /etc/lilbro/config.json
+Restart=always
+RestartSec=10
+
+# The agent runs as root so it can read the journal for the ssh events and
+# get the full details of every process. To run it with less power, add a
+# user and a SupplementaryGroups=systemd-journal line.
+
+[Install]
+WantedBy=multi-user.target
