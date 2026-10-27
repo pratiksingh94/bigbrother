@@ -37,8 +37,8 @@ jobs:
           done
 
       - name: checksums
-        working-directory: lilbro
-        run: sha256sum lilbro-* > ../dist/checksums.txt
+        working-directory: dist
+        run: sha256sum lilbro-* > checksums.txt
 
       - name: publish
         uses: softprops/action-gh-release@v2
