@@ -16,20 +16,76 @@ type Config struct {
 	ServerURL string `json:"server_url"`
 }
 
-func CreateConfig() error {
+type Options struct {
+	ServerURL string
+	AgentID   string
+	Path      string
+}
+
+func DefaultPath() string {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		return err
+		return ""
 	}
 
-	appDir := filepath.Join(configDir, "lilbro")
+	return filepath.Join(configDir, "lilbro", "config.json")
+}
+func Load(opts Options) (Config, error) {
+	path := opts.Path
+	if path == "" {
+		path = DefaultPath()
+	}
 
-	err = os.MkdirAll(appDir, 0700)
+	cfg, err := read(path)
 	if err != nil {
-		return err
+		if !os.IsNotExist(err) {
+			return Config{}, err
+		}
+
+		cfg, err = create(path, opts)
+		if err != nil {
+			return Config{}, err
+		}
 	}
 
-	path := filepath.Join(appDir, "config.json")
+	if opts.ServerURL != "" {
+		cfg.ServerURL = opts.ServerURL
+	}
+	if opts.AgentID != "" {
+		cfg.ID = opts.AgentID
+	}
+	if cfg.ID == "" {
+		cfg.ID = uuid.NewString()
+	}
+
+	return cfg, nil
+}
+
+func create(path string, opts Options) (Config, error) {
+	if opts.ServerURL == "" {
+		if err := ask(path); err != nil {
+			return Config{}, err
+		}
+		return read(path)
+	}
+
+	cfg := Config{
+		ID:        opts.AgentID,
+		ServerURL: opts.ServerURL,
+	}
+	if cfg.ID == "" {
+		cfg.ID = uuid.NewString()
+	}
+
+	if err := write(path, cfg); err != nil {
+		return Config{}, err
+	}
+
+	return cfg, nil
+}
+
+func ask(path string) error {
+	fmt.Println("Config file not found, creating one...")
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -40,38 +96,14 @@ func CreateConfig() error {
 		return err
 	}
 
-	cfg := Config{
+	return write(path, Config{
 		ID:        uuid.NewString(),
 		ServerURL: strings.TrimSpace(serverURL),
-	}
-
-	data, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	return os.WriteFile(path, data, 0600)
-
+	})
 }
 
-func EnsureConfig() {
-	configDir, _ := os.UserConfigDir()
-
-	// configFilePath := fmt.Sprintf("%s/lilbro/config.json", configDir)
-	configFilePath := filepath.Join(configDir, "lilbro", "config.json")
-
-	_, err := os.Stat(configFilePath)
-	if os.IsNotExist(err) {
-		fmt.Println("Config file not found, creating one...")
-		CreateConfig()
-	}
-}
-
-func GetConfig() (Config, error) {
-	configDir, _ := os.UserConfigDir()
-	configFilePath := filepath.Join(configDir, "lilbro", "config.json")
-
-	data, err := os.ReadFile(configFilePath)
+func read(path string) (Config, error) {
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return Config{}, err
 	}
@@ -84,4 +116,19 @@ func GetConfig() (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func write(path string, cfg Config) error {
+	if dir := filepath.Dir(path); dir != "" {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return err
+		}
+	}
+
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, data, 0600)
 }
