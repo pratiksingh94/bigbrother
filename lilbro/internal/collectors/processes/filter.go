@@ -1,33 +1,61 @@
 package processes
 
-import "strings"
+import (
+	"strings"
+)
 
-var kernelPrefixes = []string{
-	"kworker/", "ksoftirqd/", "migration/", "cpuhp/", "idle_inject/", "irq/", "rcu_", "watchdog/", "ksmd", "khugepaged", "kcompactd", "kdevtmpfs", "writeback", "kblockd", "kintegrityd", "kthrotld",
+const commLen = 15
 
-	"systemd-userwork", "systemd-journal", "systemd-udevd", "systemd-network", "systemd-resolve", "systemd-logind",
-}
+var kernelPrefixes = newPrefixes(
+	"kworker/", "ksoftirqd/", "migration/", "cpuhp/", "idle_inject/", "irq/", "rcu_",
+	"watchdog/", "ksmd", "khugepaged", "kcompactd", "kdevtmpfs", "writeback", "kblockd",
+	"kintegrityd", "kthrotld",
 
-var interactiveTerminals = map[string]bool{
-	"kitty": true, "alacritty": true, "gnome-terminal": true, "konsole": true, "xterm": true, "tmux": true, "tmux: server": true, "screen": true,
-}
+	"kthreadd", "khungtaskd", "kprobe-optimizer", "ksgxd", "oom_reaper",
+	"pool_workqueue_release", "rcub/", "scsi_eh_", "watchdogd", "hwrng", "kauditd",
+	"krfcommd", "card1-crtc",
 
-var shellNames = map[string]bool{
-	"zsh": true, "bash": true, "sh": true, "fish": true,
-}
+	"systemd-userwork", "systemd-journal", "systemd-udevd", "systemd-network",
+	"systemd-resolve", "systemd-logind", "systemd-timesyn", "systemd-userdbd",
+)
 
-var ignoredNames = map[string]bool{
-	"kitty": true, "alacritty": true, "gnome-terminal": true, "konsole": true, "xterm": true, "tmux": true, "screen": true, "Web Content": true, "WebExtensions": true, "Privileged Cont": true, "RDD Process": true, "Socket Process": true, "Utility Process": true, "bwrap": true, "gpu-process": true, "Isolated Service": true, "kitten": true,
-}
+var interactiveTerminals = newSet(
+	"kitty", "alacritty", "gnome-terminal", "konsole", "xterm",
+	"tmux", "tmux: client", "tmux: server", "screen",
+)
 
-var ignoredParents = map[string]bool{
-	"zen-bin": true, "firefox": true, "chrome": true, "chromium": true, "brave": true, "electron": true,
-}
+var shellNames = newSet(
+	"zsh", "bash", "sh", "fish",
+)
 
-// i will add this properly next time
-// var trustedPathPrefixes = []string{
-// 	"/usr/bin/", "/usr/sbin/", "/bin/", "/sbin/", "/usr/lib/", "/usr/libexec/", "/opt/",
-// }
+var ignoredNames = newSet(
+	"kitty", "alacritty", "gnome-terminal", "konsole", "xterm",
+	"tmux", "tmux: client", "tmux: server", "screen",
+	"Web Content", "WebExtensions", "Privileged Cont", "RDD Process", "Socket Process",
+	"Utility Process", "Isolated Service", "Isolated Web Content",
+	"bwrap", "gpu-process", "kitten",
+
+	"at-spi-bus-launcher", "at-spi2-registryd", "blueman-applet", "blueman-tray",
+	"dconf-service", "dbus-broker", "dbus-broker-launch", "fcitx5", "gvfsd",
+	"gvfsd-fuse", "gvfsd-metadata", "gvfsd-network", "gvfsd-trash",
+	"gvfs-udisks2-volume-monitor", "gnome-keyring-daemon", "keyboxd", "keyd",
+	"mozc_server", "pipewire", "pipewire-pulse", "polkitd", "power-profiles-daemon",
+	"rtkit-daemon", "udisksd", "upowerd", "wireplumber", "xdg-desktop-portal",
+	"xdg-document-portal", "xdg-permission-store",
+	"NetworkManager", "bluetoothd", "iwd", "Xwayland", "greetd",
+	"(sd-pam)", "(udev-worker)",
+
+	"containerd", "containerd-shim", "docker-proxy", "dockerd",
+
+	"antigravity", "codium", "code", "gopls", "language_server", "opencode",
+
+	"sleep",
+)
+
+var ignoredParents = newSet(
+	"zen-bin", "firefox", "chrome", "chromium", "brave", "electron",
+	"codium", "code", "antigravity", "opencode", "gopls", "language_server",
+)
 
 func ShouldIgnore(proc ProcessInfo, parentName string) bool {
 	if proc.Name == "" || proc.User == "" {
@@ -38,10 +66,6 @@ func ShouldIgnore(proc ProcessInfo, parentName string) bool {
 			return true
 		}
 	}
-
-	// if proc.CmdLine != "" && !isFromTrustedPath(proc.CmdLine) {
-	// 	return false
-	// }
 
 	if shellNames[proc.Name] && interactiveTerminals[parentName] {
 		return true
@@ -58,12 +82,31 @@ func ShouldIgnore(proc ProcessInfo, parentName string) bool {
 	return false
 }
 
-// func isFromTrustedPath(cmdline string) bool {
-// 	for _, prefix := range trustedPathPrefixes {
-// 		if strings.HasPrefix(cmdline, prefix) {
-// 			return true
-// 		}
-// 	}
+func comm(name string) string {
+	if len(name) > commLen {
+		return name[:commLen]
+	}
+	return name
+}
 
-// 	return !strings.HasPrefix(cmdline, "/")
-// }
+func newSet(names ...string) map[string]bool {
+	set := make(map[string]bool, len(names)*2)
+	for _, name := range names {
+		set[name] = true
+		if len(name) > commLen {
+			set[name[:commLen]] = true
+		}
+	}
+	return set
+}
+
+func newPrefixes(names ...string) []string {
+	prefixes := make([]string, 0, len(names)*2)
+	for _, name := range names {
+		prefixes = append(prefixes, name)
+		if len(name) > commLen {
+			prefixes = append(prefixes, name[:commLen])
+		}
+	}
+	return prefixes
+}

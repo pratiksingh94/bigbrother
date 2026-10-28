@@ -57,6 +57,8 @@ func Run(cfg config.Config) {
 
 		defer ticker.Stop()
 
+		var reported, filtered, ticks int
+
 		for range ticker.C {
 			// fmt.Println("tick")
 			currProceses := make(map[int]ProcessInfo)
@@ -99,8 +101,11 @@ func Run(cfg config.Config) {
 				}
 
 				if ShouldIgnore(proc, parentName) {
+					filtered++
 					continue
 				}
+
+				reported++
 
 				ev := api.EventPayload{
 					Type:    "process.creation",
@@ -116,8 +121,11 @@ func Run(cfg config.Config) {
 					parentName = parent.Name
 				}
 				if ShouldIgnore(proc, parentName) {
+					filtered++
 					continue
 				}
+
+				reported++
 
 				ev := api.EventPayload{
 					Type:    "process.terminate",
@@ -129,6 +137,12 @@ func Run(cfg config.Config) {
 
 			// maps.Copy(prevProcesses, currProceses)
 			prevProcesses = currProceses
+
+			ticks++
+			if ticks%30 == 0 {
+				fmt.Printf("processes: %d reported, %d filtered\n", reported, filtered)
+				reported, filtered = 0, 0
+			}
 		}
 	}()
 }
