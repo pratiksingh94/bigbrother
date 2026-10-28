@@ -108,6 +108,12 @@ new_id() {
     fi
 }
 
+# The id of an agent that is already set up, so that installing it a second
+# time does not leave the old one behind.
+read_id() {
+    sed -n 's/.*"id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1" | head -1
+}
+
 # Check that the server answers, so a wrong url is found out right away
 # instead of the agent reporting nothing and nobody noticing.
 check_server() {
@@ -171,6 +177,12 @@ install_agent() {
     chmod 0700 "$CONFIG_DIR"
     install -m 0755 "${tmp}/${asset}" "$BINARY"
 
+    # an agent that is already set up keeps its id, so that installing it a
+    # second time does not leave the old one behind in the dashboard
+    if [ -z "$AGENT_ID" ] && [ -f "$CONFIG" ]; then
+        AGENT_ID=$(read_id "$CONFIG")
+        [ -n "$AGENT_ID" ] && echo "keeping the agent id ${AGENT_ID}"
+    fi
     [ -n "$AGENT_ID" ] || AGENT_ID=$(new_id)
 
     cat > "$CONFIG" <<EOF

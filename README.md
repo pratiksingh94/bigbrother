@@ -129,15 +129,6 @@ lilbro --server http://your-server:8000
                               └───────────┘
 ``` -->
 
-<!-- - **`lilbro/`** - the agent, in Go. Collects process and ssh events and ships
-  them over http. It sends them as they happen and drops them when the server
-  cannot be reached, so a short outage means a gap in the timeline rather than
-  a growing backlog.
-- **`backend/`** - a FastAPI service that stores the events, runs the rule
-  engine every 30 seconds and sends the alerts.
-- **`dashboard/`** - a Next.js app for the events, the detections, the rules and
-  the alert channels. -->
-
 ## Configuration
 
 ### The server
@@ -159,6 +150,11 @@ when the image is built. Change it and rebuild:
 | `--server` | `LILBRO_SERVER_URL` | url of the Big Brother server |
 | `--id` | `LILBRO_AGENT_ID` | id of this agent, one is made when it is missing |
 | `--config` | `LILBRO_CONFIG` | where the config file lives |
+
+The config is looked for in `/etc/lilbro/config.json` first, which is where
+`install.sh` puts it, and then in `~/.config/lilbro/config.json`. If it is in
+neither, the agent asks for the server url and writes one next to your home
+directory.
 
 ## Security
 

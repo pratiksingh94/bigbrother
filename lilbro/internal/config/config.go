@@ -24,6 +24,8 @@ type Options struct {
 	Path      string
 }
 
+var SystemConfigPath = "/etc/lilbro/config.json"
+
 func DefaultPath() string {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
@@ -32,24 +34,50 @@ func DefaultPath() string {
 
 	return filepath.Join(configDir, "lilbro", "config.json")
 }
+
 func Load(opts Options) (Config, error) {
-	path := opts.Path
-	if path == "" {
-		path = DefaultPath()
+	return loadFrom(opts, configPaths(opts.Path))
+}
+
+func configPaths(explicit string) []string {
+	if explicit != "" {
+		return []string{explicit}
 	}
 
-	cfg, err := read(path)
-	if err != nil {
+	paths := []string{SystemConfigPath}
+	if user := DefaultPath(); user != "" {
+		paths = append(paths, user)
+	}
+
+	return paths
+}
+
+func loadFrom(opts Options, paths []string) (Config, error) {
+	for _, path := range paths {
+		cfg, err := read(path)
+		if err == nil {
+			return apply(opts, cfg, path), nil
+		}
+
+		if path == SystemConfigPath {
+			continue
+		}
 		if !os.IsNotExist(err) {
 			return Config{}, err
 		}
-
-		cfg, err = create(path, opts)
-		if err != nil {
-			return Config{}, err
-		}
 	}
 
+	path := paths[len(paths)-1]
+
+	cfg, err := create(path, opts)
+	if err != nil {
+		return Config{}, err
+	}
+
+	return apply(opts, cfg, path), nil
+}
+
+func apply(opts Options, cfg Config, path string) Config {
 	if opts.ServerURL != "" {
 		cfg.ServerURL = opts.ServerURL
 	}
@@ -61,7 +89,7 @@ func Load(opts Options) (Config, error) {
 	}
 	cfg.Path = path
 
-	return cfg, nil
+	return cfg
 }
 
 func create(path string, opts Options) (Config, error) {
