@@ -16,5 +16,5 @@ type HeartbeatPayload struct {
 func SendHeartbeat(cfg config.Config, payload HeartbeatPayload) error {
 	heartbeatEndpoint := fmt.Sprintf("%s/agents/heartbeat", cfg.ServerURL)
 
-	return send(heartbeatEndpoint, payload)
+	return send(cfg, heartbeatEndpoint, payload)
 }

@@ -3,13 +3,17 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
+
+	"lilbro/internal/config"
 )
 
-func send(endpoint string, payload any) error {
+func send(cfg config.Config, endpoint string, payload any) error {
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -24,7 +28,7 @@ func send(endpoint string, payload any) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return requestError(cfg, err)
 	}
 	defer resp.Body.Close()
 
@@ -33,6 +37,31 @@ func send(endpoint string, payload any) error {
 	}
 
 	return nil
+}
+
+func requestError(cfg config.Config, err error) error {
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) {
+		err = urlErr.Err
+	}
+
+	message := fmt.Errorf("could not reach %s: %w", cfg.ServerURL, err)
+
+	if !strings.HasPrefix(cfg.ServerURL, "https://") {
+		return message
+	}
+
+	message = fmt.Errorf(
+		"%w\n"+
+			"                   a big brother server serves plain http, try --server http://%s",
+		message, strings.TrimPrefix(cfg.ServerURL, "https://"))
+
+	if cfg.Path != "" {
+		message = fmt.Errorf("%w\n"+
+			"                   and fix the url in %s", message, cfg.Path)
+	}
+
+	return message
 }
 
 func detail(resp *http.Response) string {

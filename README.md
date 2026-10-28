@@ -10,6 +10,10 @@ Process telemetry, SSH auth events, a rule engine you edit in the browser, and a
 [![Images](https://github.com/pratiksingh94/bigbrother/actions/workflows/images.yml/badge.svg)](https://github.com/pratiksingh94/bigbrother/actions/workflows/images.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+## Demo Video (click)
+
+[![Big Brother Demo](/docs/screenshots/thumb.png)](https://www.youtube.com/watch?v=VU0XfocwoQ8)
+
 ---
 
 ## Why

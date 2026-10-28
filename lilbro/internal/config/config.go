@@ -14,6 +14,8 @@ import (
 type Config struct {
 	ID        string `json:"id"`
 	ServerURL string `json:"server_url"`
+
+	Path string `json:"-"`
 }
 
 type Options struct {
@@ -57,6 +59,7 @@ func Load(opts Options) (Config, error) {
 	if cfg.ID == "" {
 		cfg.ID = uuid.NewString()
 	}
+	cfg.Path = path
 
 	return cfg, nil
 }

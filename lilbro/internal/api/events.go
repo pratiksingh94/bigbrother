@@ -21,5 +21,5 @@ type EventPayload struct {
 func SendEvent(cfg config.Config, payload EventPayload) error {
 	eventEndpoint := fmt.Sprintf("%s/agents/%s/events", cfg.ServerURL, cfg.ID)
 
-	return send(eventEndpoint, payload)
+	return send(cfg, eventEndpoint, payload)
 }
